@@ -1,0 +1,54 @@
+version: '3.7'
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    restart: unless-stopped
+    privileged: true
+    user: root
+    ports:
+      - 8080:8080
+    container_name: jenkins
+
+    volumes:
+      - /jenkins:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/local/bin/docker
+    networks:
+      - jenkinslan
+
+  jenkins_ssh:
+    image: jnode
+    restart: unless-stopped
+    privileged: true
+    user: root
+    ports:
+      - 22
+    container_name: jnode
+    environment:
+
+      - JENKINS_AGENT_SSH_PUBKEY=""
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/local/bin/docker
+    networks:
+      - jenkinslan
+
+
+  nginx:
+    image: "nginx:latest"
+    ports:
+      - 8081:8080
+      - 443:443
+    volumes:
+      - ./cert:/etc/ssl
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - jenkinslan
+    depends_on:
+      - jenkins
+    restart: unless-stopped
+
+networks:
+  jenkinslan:
+    driver: bridge
