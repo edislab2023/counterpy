@@ -9,7 +9,7 @@ def counter_service():
 
     if request.method == 'POST':
         counter += 1
-        return "POST Request Registerd!"
+        return "POST Request Registerd!!!!"
 
     return f"Counter: {counter}"
 
